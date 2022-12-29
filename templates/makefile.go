@@ -49,6 +49,10 @@ const Makefile = `
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}
 {{- range $rule, $command := $GR -}}
+	{{/* Replace global variables inside command */}}
+	{{- range $name, $value := $GV -}}
+		{{- $command = strings.ReplaceAll (printf "{{GV.%s}}" $name) $value $command -}}
+	{{- end -}}
     {{- template "BuildRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
 
