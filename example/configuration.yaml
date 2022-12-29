@@ -3,7 +3,7 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
-HelperRules:
+GlobalRules:
   CloneIfNotExists: >
     [ -d "${to}" ] || git clone ${repo} ${to}
 

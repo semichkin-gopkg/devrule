@@ -1,4 +1,4 @@
-# HelperRules
+# GlobalRules
 CloneIfNotExists: 
 	[ -d "${to}" ] || git clone ${repo} ${to}
 

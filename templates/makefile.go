@@ -40,15 +40,15 @@ const Makefile = `
 
 {{/* Parse variables */}}
 {{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GV") | data.JSON -}}
-{{- $HR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "HelperRules") | data.JSON -}}
+{{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
 {{- $ER := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "EnabledRules") | data.JSONArray -}}
 {{- $DSR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "DefaultServiceRules") | data.JSON -}}
 {{- $S := tmpl.Exec "ParseDict" (dict "dict" $c "key" "Services") | data.JSON -}}
 
 
-{{/* Render helper rules from configuration.HelperRules */}}
-{{- "# HelperRules\n" -}}
-{{- range $rule, $command := $HR -}}
+{{/* Render global rules */}}
+{{- "# GlobalRules\n" -}}
+{{- range $rule, $command := $GR -}}
     {{- template "BuildRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
 

@@ -15,14 +15,14 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
-HelperRules:
+GlobalRules:
   CloneIfNotExists: >
     [ -d "${to}" ] || git clone ${repo} ${to}
 
 EnabledRules:
   - "Load"
   - "Actualize"
-  
+
 Services:
   Configurator:
     # service variables
@@ -42,8 +42,8 @@ DefaultServiceRules:
     to="{{GV.LoadingFolder}}/{{V.Path}}"
 
   Actualize: >
-    make Load && 
-    cd {{GV.LoadingFolder}}/{{V.Path}} && 
+    make {{V.ServiceName}}_Load &&
+    cd {{GV.LoadingFolder}}/{{V.Path}} &&
     git pull origin $(git branch --show-current)
 ```
 
@@ -52,7 +52,7 @@ DefaultServiceRules:
 
 #### Result
 ```makefile
-# HelperRules
+# GlobalRules
 CloneIfNotExists: 
 	[ -d "${to}" ] || git clone ${repo} ${to}
 
