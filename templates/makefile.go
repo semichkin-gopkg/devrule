@@ -1,6 +1,6 @@
 package templates
 
-var Makefile = `
+const Makefile = `
 {{- define "BuildRule" -}}
 {{- $command := .command | strings.TrimSpace | strings.ReplaceAll "\n" "\n\t" -}}
 {{- if eq $command "" -}}
@@ -72,6 +72,7 @@ var Makefile = `
 
         {{/* Load service variables */}}
         {{- $V := tmpl.Exec "ParseDict" (dict "dict" $service "key" "V") | data.JSON -}}
+        {{- $V = merge $V (dict "ServiceName" $name "Rule" $rule) -}}
 
         {{/* Replace service variables inside command */}}
         {{- range $name, $value := $V -}}
