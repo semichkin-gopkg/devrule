@@ -41,7 +41,7 @@ const Makefile = `
 {{/* Parse variables */}}
 {{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GV") | data.JSON -}}
 {{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
-{{- $ER := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "EnabledRules") | data.JSONArray -}}
+{{- $MR := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "MainRules") | data.JSONArray -}}
 {{- $DSR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "DefaultServiceRules") | data.JSON -}}
 {{- $S := tmpl.Exec "ParseDict" (dict "dict" $c "key" "Services") | data.JSON -}}
 
@@ -62,7 +62,7 @@ const Makefile = `
 {{- range $name, $service := $S -}}
 
     {{/* Render service rules */}}
-    {{- range $index, $rule := $ER -}}
+    {{- range $index, $rule := $MR -}}
         {{/* Load service rules */}}
         {{- $SR := tmpl.Exec "ParseDict" (dict "dict" $service "key" "Rules") | data.JSON -}}
 
@@ -95,7 +95,7 @@ const Makefile = `
 
 {{/* Render main rules */}}
 {{- "# MainRules\n" -}}
-{{- range $index, $rule := $ER -}}
+{{- range $index, $rule := $MR -}}
     {{- $dependencies := "" -}}
 
     {{- range $name, $service := $S -}}
