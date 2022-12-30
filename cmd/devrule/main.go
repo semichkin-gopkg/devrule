@@ -13,7 +13,7 @@ func main() {
 		Name:        "devrule",
 		Usage:       "Development Makefile builder",
 		Description: "A tool for generating rules for managing a large number of local microservices",
-		Version:     "v0.0.5",
+		Version:     "v0.0.6",
 		Commands: []*cli.Command{
 			{
 				Name:    "build",
@@ -34,8 +34,6 @@ func main() {
 					},
 				},
 				Action: func(context *cli.Context) error {
-					log.Println(context.Path("configuration"), context.Path("output"))
-
 					return gomplate.RunTemplates(&gomplate.Config{
 						Input:       templates.Makefile,
 						DataSources: []string{"configuration=" + context.Path("configuration")},

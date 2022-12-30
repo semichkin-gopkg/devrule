@@ -2,10 +2,10 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@latest`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.6`
 
 ### Usage
-`devrule -c path/to/configuration.[yaml|json] -o path/to/output/Makefile`
+`devrule build -c path/to/configuration.[yaml|json] -o path/to/output/Makefile`
 
 ### Example
 #### configuration.yaml
