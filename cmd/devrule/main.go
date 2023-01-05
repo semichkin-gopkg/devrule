@@ -13,8 +13,25 @@ func main() {
 		Name:        "devrule",
 		Usage:       "Development Makefile builder",
 		Description: "A tool for generating rules for managing a large number of local microservices",
-		Version:     "v0.0.7",
+		Version:     "v0.0.8",
 		Commands: []*cli.Command{
+			{
+				Name:    "init",
+				Aliases: []string{"i"},
+				Usage:   "Init configuration",
+
+				Flags: []cli.Flag{
+					&cli.PathFlag{
+						Name:        "output",
+						Aliases:     []string{"o"},
+						Value:       "configuration.yaml",
+						DefaultText: "configuration.yaml",
+					},
+				},
+				Action: func(context *cli.Context) error {
+					return os.WriteFile(context.Path("output"), []byte(templates.Configuration), 0666)
+				},
+			},
 			{
 				Name:    "build",
 				Aliases: []string{"b"},

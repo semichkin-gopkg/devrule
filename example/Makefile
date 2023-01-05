@@ -1,20 +1,19 @@
 # GlobalRules
-CloneIfNotExists: 
-	[ -d "${to}" ] || git clone ${repo} ${to}
+_clone: 
+	[ -d '${to}' ] || git clone ${repo} ${to}
+
+Test: 
+	echo "test"
 
 # ServiceRules
 Configurator_Load: 
-	make CloneIfNotExists \
-	repo="https://github.com/semichkin-gopkg/configurator.git" \
-	to="services/configurator"
+	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator"
 
 Configurator_Actualize: 
 	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current)
 
 Promise_Load: 
-	make CloneIfNotExists \
-	repo="https://github.com/semichkin-gopkg/promise.git" \
-	to="services/promise"
+	git clone {some_2}
 
 Promise_Actualize: 
 	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current)

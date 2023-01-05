@@ -4,22 +4,29 @@ A tool for generating rules for managing a large number of local microservices
 ### Installing
 `go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.6`
 
+### initializing
+`devrule init -o path/to/output/configuration.yaml`
+
 ### Usage
 `devrule build -c path/to/configuration.[yaml|json] -o path/to/output/Makefile`
 
 ### Example
+
+#### Run configuration.yaml initialization
+`devrule init -o example/configuration.yaml`
+
 #### configuration.yaml
 ```yaml
 # global variables
-GV:
+GlobalVars:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
 GlobalRules:
-  CloneIfNotExists: >
-    [ -d "${to}" ] || git clone ${repo} ${to}
+  Test: >
+    echo "test"
 
-EnabledRules:
+MainRules:
   - "Load"
   - "Actualize"
 
@@ -31,14 +38,14 @@ Services:
   Promise:
     V:
       Path: "promise"
+    Rules:
+      Load: "git clone {some_2}"
   # etc...
 
 DefaultServiceRules:
   Load: >
-    make CloneIfNotExists \
-
+    make _clone \
     repo="{{GV.RepoBase}}/{{V.Path}}.git" \
-
     to="{{GV.LoadingFolder}}/{{V.Path}}"
 
   Actualize: >
@@ -53,22 +60,21 @@ DefaultServiceRules:
 #### Result
 ```makefile
 # GlobalRules
-CloneIfNotExists: 
-	[ -d "${to}" ] || git clone ${repo} ${to}
+_clone: 
+	[ -d '${to}' ] || git clone ${repo} ${to}
+
+Test: 
+	echo "test"
 
 # ServiceRules
 Configurator_Load: 
-	make CloneIfNotExists \
-	repo="https://github.com/semichkin-gopkg/configurator.git" \
-	to="services/configurator"
+	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator"
 
 Configurator_Actualize: 
 	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current)
 
 Promise_Load: 
-	make CloneIfNotExists \
-	repo="https://github.com/semichkin-gopkg/promise.git" \
-	to="services/promise"
+	git clone {some_2}
 
 Promise_Actualize: 
 	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current)

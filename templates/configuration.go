@@ -1,4 +1,6 @@
-# global variables
+package templates
+
+const Configuration = `# global variables
 GlobalVars:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
@@ -16,6 +18,8 @@ Services:
   # service variables
     V:
       Path: "configurator"
+    Rules:
+      Load: "git clone {some_1}"
   Promise:
     V:
       Path: "promise"
@@ -33,3 +37,4 @@ DefaultServiceRules:
     make {{V.ServiceName}}_Load &&
     cd {{GV.LoadingFolder}}/{{V.Path}} &&
     git pull origin $(git branch --show-current)
+`

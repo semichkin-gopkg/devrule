@@ -1,7 +1,7 @@
 package templates
 
 const Makefile = `
-{{- define "BuildRule" -}}
+{{- define "RenderRule" -}}
 {{- $command := .command | strings.TrimSpace | strings.ReplaceAll "\n" "\n\t" -}}
 {{- if eq $command "" -}}
     {{ printf "%s: %s\n\n" .rule .dependencies }}
@@ -26,20 +26,15 @@ const Makefile = `
 {{- $result | data.ToJSON -}}
 {{- end -}}
 
-{{- define "ParseString" -}}
-{{- $result := "" -}}
-{{- if has .dict .key -}}
-    {{- $result = index .dict .key -}}
-{{- end -}}
-{{- $result | data.ToJSON -}}
-{{- end -}}
-
 {{/* Load configuration file (-d configuration.yaml) */}}
 {{- $c := ds "configuration" -}}
 
+{{/* Init internal global rules */}}
+{{- $IGR := dict "_clone" "[ -d '${to}' ] || git clone ${repo} ${to}" -}}
+
 
 {{/* Parse variables */}}
-{{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GV") | data.JSON -}}
+{{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalVars") | data.JSON -}}
 {{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
 {{- $MR := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "MainRules") | data.JSONArray -}}
 {{- $DSR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "DefaultServiceRules") | data.JSON -}}
@@ -48,12 +43,19 @@ const Makefile = `
 
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}
+
+{{/* Render internal global rules */}}
+{{- range $rule, $command := $IGR -}}
+    {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
+{{- end -}}
+
+{{/* Render external global rules */}}
 {{- range $rule, $command := $GR -}}
 	{{/* Replace global variables inside command */}}
 	{{- range $name, $value := $GV -}}
 		{{- $command = strings.ReplaceAll (printf "{{GV.%s}}" $name) $value $command -}}
 	{{- end -}}
-    {{- template "BuildRule" dict "rule" $rule "dependencies" "" "command" $command }}
+    {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
 
 
@@ -88,10 +90,11 @@ const Makefile = `
             {{- $command = strings.ReplaceAll (printf "{{GV.%s}}" $name) $value $command -}}
         {{- end -}}
 
-        {{- template "BuildRule" dict "rule" (printf "%s_%s" $name $rule) "dependencies" "" "command" $command -}}
+        {{- template "RenderRule" dict "rule" (printf "%s_%s" $name $rule) "dependencies" "" "command" $command -}}
     {{- end -}}
 
 {{- end -}}
+
 
 {{/* Render main rules */}}
 {{- "# MainRules\n" -}}
@@ -103,6 +106,6 @@ const Makefile = `
     {{- end -}}
 
     {{- $dependencies = strings.TrimPrefix " " $dependencies}}
-    {{- template "BuildRule" dict "rule" $rule "dependencies" $dependencies "command" "" -}}
+    {{- template "RenderRule" dict "rule" $rule "dependencies" $dependencies "command" "" -}}
 {{- end -}}
 `
