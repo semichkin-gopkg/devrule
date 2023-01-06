@@ -2,21 +2,30 @@
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
-Test: 
-	echo "test"
+Build: 
+	cd docker && docker-compose build
+
+Restart: 
+	cd docker && docker-compose restart
+
+Start: 
+	cd docker && docker-compose up -d
+
+Stop: 
+	cd docker && docker-compose down
 
 # ServiceRules
 Configurator_Load: 
-	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator"
+	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && make Load || true
 
 Configurator_Actualize: 
-	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current)
+	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current) && make Actualize || true
 
 Promise_Load: 
 	git clone {some_2}
 
 Promise_Actualize: 
-	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current)
+	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && make Actualize || true
 
 # MainRules
 Load: Configurator_Load Promise_Load

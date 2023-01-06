@@ -18,17 +18,32 @@ A tool for generating rules for managing a large number of local microservices
 #### configuration.yaml
 ```yaml
 # global variables
-GlobalVars:
+GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
 GlobalRules:
-  Test: >
-    echo "test"
+  Build: "cd docker && docker-compose build"
+  Start: "cd docker && docker-compose up -d"
+  Stop: "cd docker && docker-compose down"
+  Restart: "cd docker && docker-compose restart"
 
 MainRules:
   - "Load"
   - "Actualize"
+
+DefaultServiceRules:
+  Load: >
+    make _clone \
+    repo="{{GV.RepoBase}}/{{V.Path}}.git" \
+    to="{{GV.LoadingFolder}}/{{V.Path}}" &&
+    cd {{GV.LoadingFolder}}/{{V.Path}} &&
+    make Load || true
+  Actualize: >
+    make {{V.ServiceName}}_Load &&
+    cd {{GV.LoadingFolder}}/{{V.Path}} &&
+    git pull origin $(git branch --show-current) &&
+    make Actualize || true
 
 Services:
   Configurator:
@@ -41,17 +56,6 @@ Services:
     Rules:
       Load: "git clone {some_2}"
   # etc...
-
-DefaultServiceRules:
-  Load: >
-    make _clone \
-    repo="{{GV.RepoBase}}/{{V.Path}}.git" \
-    to="{{GV.LoadingFolder}}/{{V.Path}}"
-
-  Actualize: >
-    make {{V.ServiceName}}_Load &&
-    cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    git pull origin $(git branch --show-current)
 ```
 
 #### Run Makefile generation
@@ -63,21 +67,30 @@ DefaultServiceRules:
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
-Test: 
-	echo "test"
+Build: 
+	cd docker && docker-compose build
+
+Restart: 
+	cd docker && docker-compose restart
+
+Start: 
+	cd docker && docker-compose up -d
+
+Stop: 
+	cd docker && docker-compose down
 
 # ServiceRules
 Configurator_Load: 
-	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator"
+	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && make Load || true
 
 Configurator_Actualize: 
-	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current)
+	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current) && make Actualize || true
 
 Promise_Load: 
 	git clone {some_2}
 
 Promise_Actualize: 
-	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current)
+	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && make Actualize || true
 
 # MainRules
 Load: Configurator_Load Promise_Load
