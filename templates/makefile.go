@@ -34,7 +34,7 @@ const Makefile = `
 
 
 {{/* Parse variables */}}
-{{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalVars") | data.JSON -}}
+{{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GV") | data.JSON -}}
 {{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
 {{- $MR := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "MainRules") | data.JSONArray -}}
 {{- $DSR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "DefaultServiceRules") | data.JSON -}}

@@ -1,5 +1,5 @@
 # global variables
-GlobalVars:
+GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 

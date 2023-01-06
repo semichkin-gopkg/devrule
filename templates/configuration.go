@@ -1,7 +1,7 @@
 package templates
 
 const Configuration = `# global variables
-GlobalVars:
+GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
@@ -18,8 +18,6 @@ Services:
   # service variables
     V:
       Path: "configurator"
-    Rules:
-      Load: "git clone {some_1}"
   Promise:
     V:
       Path: "promise"
