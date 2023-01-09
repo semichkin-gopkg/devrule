@@ -6,10 +6,9 @@ GV:
   LoadingFolder: "services"
 
 GlobalRules:
-  Build: "cd docker && docker-compose build"
-  Start: "cd docker && docker-compose up -d"
+  Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
-  Restart: "cd docker && docker-compose restart"
+  Restart: "make Stop && make Start"
 
 MainRules:
   - "Load"
@@ -21,19 +20,19 @@ DefaultServiceRules:
     repo="{{GV.RepoBase}}/{{V.Path}}.git" \
     to="{{GV.LoadingFolder}}/{{V.Path}}" &&
     cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    make Load || true
+    (make Load || true)
   Actualize: >
     make {{V.ServiceName}}_Load &&
     cd {{GV.LoadingFolder}}/{{V.Path}} &&
     git pull origin $(git branch --show-current) &&
-    make Actualize || true
+    (make Actualize || true)
 
 Services:
-  Configurator:
+  - Name: Configurator
     # service variables
     V:
       Path: "configurator"
-  Promise:
+  - Name: Promise
     V:
       Path: "promise"
     Rules:

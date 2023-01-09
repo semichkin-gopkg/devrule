@@ -23,10 +23,9 @@ GV:
   LoadingFolder: "services"
 
 GlobalRules:
-  Build: "cd docker && docker-compose build"
-  Start: "cd docker && docker-compose up -d"
+  Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
-  Restart: "cd docker && docker-compose restart"
+  Restart: "make Stop && make Start"
 
 MainRules:
   - "Load"
@@ -38,19 +37,19 @@ DefaultServiceRules:
     repo="{{GV.RepoBase}}/{{V.Path}}.git" \
     to="{{GV.LoadingFolder}}/{{V.Path}}" &&
     cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    make Load || true
+    (make Load || true)
   Actualize: >
     make {{V.ServiceName}}_Load &&
     cd {{GV.LoadingFolder}}/{{V.Path}} &&
     git pull origin $(git branch --show-current) &&
-    make Actualize || true
+    (make Actualize || true)
 
 Services:
-  Configurator:
+  - Name: Configurator
     # service variables
     V:
       Path: "configurator"
-  Promise:
+  - Name: Promise
     V:
       Path: "promise"
     Rules:
@@ -67,30 +66,27 @@ Services:
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
-Build: 
-	cd docker && docker-compose build
-
 Restart: 
-	cd docker && docker-compose restart
+	make Stop && make Start
 
 Start: 
-	cd docker && docker-compose up -d
+	cd docker && docker-compose up -d --build
 
 Stop: 
 	cd docker && docker-compose down
 
 # ServiceRules
 Configurator_Load: 
-	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && make Load || true
+	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && (make Load || true)
 
 Configurator_Actualize: 
-	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current) && make Actualize || true
+	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current) && (make Actualize || true)
 
 Promise_Load: 
 	git clone {some_2}
 
 Promise_Actualize: 
-	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && make Actualize || true
+	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && (make Actualize || true)
 
 # MainRules
 Load: Configurator_Load Promise_Load

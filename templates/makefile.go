@@ -38,7 +38,7 @@ const Makefile = `
 {{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
 {{- $MR := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "MainRules") | data.JSONArray -}}
 {{- $DSR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "DefaultServiceRules") | data.JSON -}}
-{{- $S := tmpl.Exec "ParseDict" (dict "dict" $c "key" "Services") | data.JSON -}}
+{{- $S := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Services") | data.JSONArray -}}
 
 
 {{/* Render global rules */}}
@@ -61,13 +61,14 @@ const Makefile = `
 
 {{/* Render service rules from configuration.Services.[Name].Rules or configuration.DefaultServiceRules */}}
 {{- "# ServiceRules\n" -}}
-{{- range $name, $service := $S -}}
+{{- range $index, $service := $S -}}
+
+	{{- $name := index $service "Name" -}}
+	{{/* Load service rules */}}
+	{{- $SR := tmpl.Exec "ParseDict" (dict "dict" $service "key" "Rules") | data.JSON -}}
 
     {{/* Render service rules */}}
     {{- range $index, $rule := $MR -}}
-        {{/* Load service rules */}}
-        {{- $SR := tmpl.Exec "ParseDict" (dict "dict" $service "key" "Rules") | data.JSON -}}
-
         {{/* Generate command */}}
         {{- $command := "" -}}
         {{- if has $SR $rule -}}
@@ -101,8 +102,8 @@ const Makefile = `
 {{- range $index, $rule := $MR -}}
     {{- $dependencies := "" -}}
 
-    {{- range $name, $service := $S -}}
-        {{- $dependencies = printf "%s %s_%s" $dependencies $name $rule -}}
+    {{- range $index, $service := $S -}}
+        {{- $dependencies = printf "%s %s_%s" $dependencies (index $service "Name") $rule -}}
     {{- end -}}
 
     {{- $dependencies = strings.TrimPrefix " " $dependencies}}
