@@ -41,6 +41,15 @@ const Makefile = `
 {{- $S := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Services") | data.JSONArray -}}
 
 
+{{/* Render env file import */}}
+{{- if has $c "ENV" -}}
+	{{- $e := index $c "ENV" -}}
+	{{- if has $e "Path" -}}
+		{{- $p := index $e "Path" -}}
+		{{ printf "include %s\nexport $(shell sed 's/=.*//' %s)\n\n" $p $p }}
+	{{- end -}}
+{{- end -}}
+
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}
 

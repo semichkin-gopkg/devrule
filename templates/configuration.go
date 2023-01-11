@@ -5,10 +5,15 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
+ENV:
+  Path: ".env" # relative output makefile
+
 GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
+  
+  Env: "echo ${EXAMPLE}"
 
 MainRules:
   - "Load"

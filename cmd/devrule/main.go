@@ -13,7 +13,7 @@ func main() {
 		Name:        "devrule",
 		Usage:       "Development Makefile builder",
 		Description: "A tool for generating rules for managing a large number of local microservices",
-		Version:     "v0.0.11",
+		Version:     "v0.0.12",
 		Commands: []*cli.Command{
 			{
 				Name:    "init",

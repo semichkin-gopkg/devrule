@@ -1,6 +1,12 @@
+include .env
+export $(shell sed 's/=.*//' .env)
+
 # GlobalRules
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
+
+Env: 
+	echo ${EXAMPLE}
 
 Restart: 
 	make Stop && make Start

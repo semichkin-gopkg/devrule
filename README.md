@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.11`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.12`
 
 ### Initializing
 `devrule init -o path/to/output/configuration.yaml`
@@ -22,10 +22,15 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
+ENV:
+  Path: ".env" # relative output makefile
+
 GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
+
+  Env: "echo ${EXAMPLE}"
 
 MainRules:
   - "Load"
@@ -62,9 +67,15 @@ Services:
 
 #### Result
 ```makefile
+include .env
+export $(shell sed 's/=.*//' .env)
+
 # GlobalRules
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
+
+Env: 
+	echo ${EXAMPLE}
 
 Restart: 
 	make Stop && make Start
