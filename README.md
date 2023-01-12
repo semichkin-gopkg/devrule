@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.12`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.13`
 
 ### Initializing
 `devrule init -o path/to/output/configuration.yaml`
@@ -22,15 +22,12 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
-ENV:
-  Path: ".env" # relative output makefile
-
 GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
 
-  Env: "echo ${EXAMPLE}"
+  Env: "echo ${DEFAULT_VALUE} && echo ${EXAMPLE}"
 
 MainRules:
   - "Load"
@@ -68,14 +65,17 @@ Services:
 #### Result
 ```makefile
 include .env
-export $(shell sed 's/=.*//' .env)
+ifneq (,$(wildcard .local.env))
+	include .local.env
+endif
+export
 
 # GlobalRules
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
 Env: 
-	echo ${EXAMPLE}
+	echo ${DEFAULT_VALUE} && echo ${EXAMPLE}
 
 Restart: 
 	make Stop && make Start
@@ -103,4 +103,10 @@ Promise_Actualize:
 Load: Configurator_Load Promise_Load
 
 Actualize: Configurator_Actualize Promise_Actualize
+```
+```shell
+~ cd example && make Env && cd ..
+echo from_local_env && echo example
+from_local_env
+example
 ```

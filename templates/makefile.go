@@ -42,13 +42,7 @@ const Makefile = `
 
 
 {{/* Render env file import */}}
-{{- if has $c "ENV" -}}
-	{{- $e := index $c "ENV" -}}
-	{{- if has $e "Path" -}}
-		{{- $p := index $e "Path" -}}
-		{{ printf "include %s\nexport $(shell sed 's/=.*//' %s)\n\n" $p $p }}
-	{{- end -}}
-{{- end -}}
+{{- "include .env\nifneq (,$(wildcard .local.env))\n\tinclude .local.env\nendif\nexport\n\n" -}}
 
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}

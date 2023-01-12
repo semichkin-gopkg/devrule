@@ -1,12 +1,15 @@
 include .env
-export $(shell sed 's/=.*//' .env)
+ifneq (,$(wildcard .local.env))
+	include .local.env
+endif
+export
 
 # GlobalRules
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
 Env: 
-	echo ${EXAMPLE}
+	echo ${DEFAULT_VALUE} && echo ${EXAMPLE}
 
 Restart: 
 	make Stop && make Start
