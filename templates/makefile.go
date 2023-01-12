@@ -41,8 +41,14 @@ const Makefile = `
 {{- $S := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Services") | data.JSONArray -}}
 
 
-{{/* Render env file import */}}
-{{- "include .env\nifneq (,$(wildcard .local.env))\n\tinclude .local.env\nendif\nexport\n\n" -}}
+{{- /* Render env file import */ -}}
+ifneq (,$(wildcard .env))
+	include .env
+	ifneq (,$(wildcard .local.env))
+		include .local.env
+	endif
+	export
+endif
 
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}

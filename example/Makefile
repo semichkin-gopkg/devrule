@@ -1,8 +1,10 @@
-include .env
-ifneq (,$(wildcard .local.env))
-	include .local.env
+ifneq (,$(wildcard .env))
+	include .env
+	ifneq (,$(wildcard .local.env))
+		include .local.env
+	endif
+	export
 endif
-export
 
 # GlobalRules
 _clone: 

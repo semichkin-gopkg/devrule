@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.13`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.14`
 
 ### Initializing
 `devrule init -o path/to/output/configuration.yaml`
@@ -64,11 +64,13 @@ Services:
 
 #### Result
 ```makefile
-include .env
-ifneq (,$(wildcard .local.env))
-	include .local.env
+ifneq (,$(wildcard .env))
+	include .env
+	ifneq (,$(wildcard .local.env))
+		include .local.env
+	endif
+	export
 endif
-export
 
 # GlobalRules
 _clone: 
