@@ -2,17 +2,12 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.14`
-
-### Initializing
-`devrule init -o path/to/output/configuration.yaml`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.15`
 
 ### Usage
+## Build
 `devrule build -c path/to/configuration.[yaml|json] -o path/to/output/Makefile`
-
-### Example
-
-#### Run configuration.yaml initialization
+## Init
 `devrule init -o example/configuration.yaml`
 
 #### configuration.yaml
@@ -22,12 +17,15 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
+EnvFiles:
+  - import.env
+
 GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
 
-  Env: "echo ${DEFAULT_VALUE} && echo ${EXAMPLE}"
+  Env: "echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}"
 
 MainRules:
   - "Load"
@@ -66,9 +64,14 @@ Services:
 ```makefile
 ifneq (,$(wildcard .env))
 	include .env
-	ifneq (,$(wildcard .local.env))
-		include .local.env
-	endif
+	export
+endif
+ifneq (,$(wildcard .local.env))
+	include .local.env
+	export
+endif
+ifneq (,$(wildcard import.env))
+	include import.env
 	export
 endif
 
@@ -77,7 +80,7 @@ _clone:
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
 Env: 
-	echo ${DEFAULT_VALUE} && echo ${EXAMPLE}
+	echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}
 
 Restart: 
 	make Stop && make Start
@@ -105,10 +108,4 @@ Promise_Actualize:
 Load: Configurator_Load Promise_Load
 
 Actualize: Configurator_Actualize Promise_Actualize
-```
-```shell
-~ cd example && make Env && cd ..
-echo from_local_env && echo example
-from_local_env
-example
 ```
