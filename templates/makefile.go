@@ -34,6 +34,7 @@ const Makefile = `
 
 
 {{/* Parse variables */}}
+{{- $EF := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "EnvFiles") | data.JSONArray -}}
 {{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GV") | data.JSON -}}
 {{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
 {{- $MR := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "MainRules") | data.JSONArray -}}
@@ -41,14 +42,21 @@ const Makefile = `
 {{- $S := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Services") | data.JSONArray -}}
 
 
-{{- /* Render env file import */ -}}
+{{- /* Render env files import */ -}}
 ifneq (,$(wildcard .env))
 	include .env
-	ifneq (,$(wildcard .local.env))
-		include .local.env
-	endif
 	export
 endif
+ifneq (,$(wildcard .local.env))
+	include .local.env
+	export
+endif
+{{- range $i, $path := $EF }}
+ifneq (,$(wildcard {{ $path }}))
+	include {{ $path }}
+	export
+endif
+{{- end }}
 
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}

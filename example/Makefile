@@ -1,8 +1,13 @@
 ifneq (,$(wildcard .env))
 	include .env
-	ifneq (,$(wildcard .local.env))
-		include .local.env
-	endif
+	export
+endif
+ifneq (,$(wildcard .local.env))
+	include .local.env
+	export
+endif
+ifneq (,$(wildcard import.env))
+	include import.env
 	export
 endif
 
@@ -11,7 +16,7 @@ _clone:
 	[ -d '${to}' ] || git clone ${repo} ${to}
 
 Env: 
-	echo ${DEFAULT_VALUE} && echo ${EXAMPLE}
+	echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}
 
 Restart: 
 	make Stop && make Start
