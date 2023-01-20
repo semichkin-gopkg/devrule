@@ -1,13 +1,18 @@
 package templates
 
 const Makefile = `
-{{- define "RenderRule" -}}
+{{- define "RenderRuleWithoutNewLine" -}}
 {{- $command := .command | strings.TrimSpace | strings.ReplaceAll "\n" "\n\t" -}}
 {{- if eq $command "" -}}
-    {{ printf "%s: %s\n\n" .rule .dependencies }}
+    {{ printf "%s: %s\n" .rule .dependencies }}
 {{- else -}}
-    {{ printf "%s: %s\n\t%s\n\n" .rule .dependencies $command }}
+    {{ printf "%s: %s\n\t%s\n" .rule .dependencies $command }}
 {{- end -}}
+{{- end -}}
+
+{{- define "RenderRule" -}}
+{{- template "RenderRuleWithoutNewLine" dict "rule" .rule "dependencies" .dependencies "command" .command -}}
+{{ printf "\n" }}
 {{- end -}}
 
 {{- define "ParseDict" -}}
@@ -59,7 +64,7 @@ endif
 {{- end }}
 
 {{/* Render global rules */}}
-{{- "# GlobalRules\n" -}}
+{{- "\n# GlobalRules\n" -}}
 
 {{/* Render internal global rules */}}
 {{- range $rule, $command := $IGR -}}
@@ -75,10 +80,18 @@ endif
     {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
 
+{{- $Tags := coll.Slice "_" -}}
 
 {{/* Render service rules from configuration.Services.[Name].Rules or configuration.DefaultServiceRules */}}
-{{- "# ServiceRules\n" -}}
+{{- "\n# ServiceRules\n" -}}
 {{- range $index, $service := $S -}}
+
+	{{- $serviceTags := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Tags") | data.JSONArray -}}
+	{{- range $index, $tag := $serviceTags -}}
+		{{- if not (has $Tags $tag) -}}
+			{{- $Tags = $Tags | append $tag -}}
+		{{- end -}}
+	{{- end -}}
 
 	{{- $name := index $service "Name" -}}
 	{{/* Load service rules */}}
@@ -86,7 +99,10 @@ endif
 
     {{/* Render service rules */}}
     {{- range $index, $rule := $MR -}}
+
         {{/* Generate command */}}
+		{{- $commandName := printf "%s_%s" $name $rule -}}
+
         {{- $command := "" -}}
         {{- if has $SR $rule -}}
             {{- $command = index $SR $rule -}}
@@ -108,22 +124,43 @@ endif
             {{- $command = strings.ReplaceAll (printf "{{GV.%s}}" $name) $value $command -}}
         {{- end -}}
 
-        {{- template "RenderRule" dict "rule" (printf "%s_%s" $name $rule) "dependencies" "" "command" $command -}}
+		{{/* Render rule */}}
+		{{- template "RenderRule" dict "rule" $commandName "dependencies" "" "command" $command -}}
+
     {{- end -}}
 
 {{- end -}}
 
+{{/* Render grouped rules */}}
+{{- "\n# GroupedRules\n\n" -}}
+{{- range $index, $tag := $Tags -}}
+	{{- if eq $tag "_" -}}
+		{{- "# Main Rules\n" -}}
+	{{- else -}}
+		{{- printf "# %s Rules\n" $tag -}}
+	{{- end -}}
 
-{{/* Render main rules */}}
-{{- "# MainRules\n" -}}
-{{- range $index, $rule := $MR -}}
-    {{- $dependencies := "" -}}
+	{{- range $index, $rule := $MR -}}
+		{{- $dependencies := "" -}}
+	
+		{{- range $index, $service := $S -}}
+			{{- $serviceTags := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Tags") | data.JSONArray -}}
 
-    {{- range $index, $service := $S -}}
-        {{- $dependencies = printf "%s %s_%s" $dependencies (index $service "Name") $rule -}}
-    {{- end -}}
+			{{- if or (eq $tag "_") (has $serviceTags $tag) -}}
+				{{- $dependencies = printf "%s %s_%s" $dependencies (index $service "Name") $rule -}}
+			{{- end -}}
+		{{- end -}}
 
-    {{- $dependencies = strings.TrimPrefix " " $dependencies}}
-    {{- template "RenderRule" dict "rule" $rule "dependencies" $dependencies "command" "" -}}
+		{{- $dependencies = strings.TrimPrefix " " $dependencies}}
+
+		{{- $groupRule := $rule -}}
+		{{- if ne $tag "_" -}}
+			{{- $groupRule = printf "%s_%s" $tag $rule -}}
+		{{- end -}}
+
+		{{- template "RenderRuleWithoutNewLine" dict "rule" $groupRule "dependencies" $dependencies "command" "" -}}
+	{{- end -}}
+
+	{{ printf "\n" }}
 {{- end -}}
 `

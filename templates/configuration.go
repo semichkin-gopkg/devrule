@@ -1,16 +1,20 @@
 package templates
 
 const Configuration = `# global variables
+# global variables
 GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
+
+EnvFiles:
+  - import.env
 
 GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
   
-  Env: "echo ${DEFAULT_VALUE} && echo ${EXAMPLE}"
+  Env: "echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}"
 
 MainRules:
   - "Load"
@@ -31,10 +35,12 @@ DefaultServiceRules:
 
 Services:
   - Name: Configurator
+    Tags: ["Namespace1", "Namespace2"]
     # service variables
     V:
       Path: "configurator"
   - Name: Promise
+    Tags: ["Namespace1"]
     V:
       Path: "promise"
     Rules:

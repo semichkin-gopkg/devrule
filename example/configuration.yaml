@@ -32,10 +32,12 @@ DefaultServiceRules:
 
 Services:
   - Name: Configurator
+    Tags: ["Namespace1", "Namespace2"]
     # service variables
     V:
       Path: "configurator"
   - Name: Promise
+    Tags: ["Namespace1"]
     V:
       Path: "promise"
     Rules:

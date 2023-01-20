@@ -11,6 +11,7 @@ ifneq (,$(wildcard import.env))
 	export
 endif
 
+
 # GlobalRules
 _clone: 
 	[ -d '${to}' ] || git clone ${repo} ${to}
@@ -27,6 +28,7 @@ Start:
 Stop: 
 	cd docker && docker-compose down
 
+
 # ServiceRules
 Configurator_Load: 
 	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && (make Load || true)
@@ -40,8 +42,18 @@ Promise_Load:
 Promise_Actualize: 
 	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && (make Actualize || true)
 
-# MainRules
-Load: Configurator_Load Promise_Load
 
+# GroupedRules
+
+# Main Rules
+Load: Configurator_Load Promise_Load
 Actualize: Configurator_Actualize Promise_Actualize
+
+# Namespace1 Rules
+Namespace1_Load: Configurator_Load Promise_Load
+Namespace1_Actualize: Configurator_Actualize Promise_Actualize
+
+# Namespace2 Rules
+Namespace2_Load: Configurator_Load
+Namespace2_Actualize: Configurator_Actualize
 
