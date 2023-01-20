@@ -45,6 +45,9 @@ Configurator_Actualize:
 Promise_Load: 
 	git clone {some_2}
 
+Promise_Unique: 
+	echo 'test'
+
 Promise_Actualize: 
 	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && (make Actualize || true)
 

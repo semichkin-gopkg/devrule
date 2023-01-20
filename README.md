@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.17`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.18`
 
 ### Usage
 ## Build
@@ -60,6 +60,7 @@ Services:
       Path: "promise"
     Rules:
       Load: "git clone {some_2}"
+      Unique: "echo 'test'"
   # etc...
 ```
 
@@ -114,6 +115,9 @@ Configurator_Actualize:
 
 Promise_Load: 
 	git clone {some_2}
+
+Promise_Unique: 
+	echo 'test'
 
 Promise_Actualize: 
 	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && (make Actualize || true)

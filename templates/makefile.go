@@ -97,8 +97,15 @@ endif
 	{{/* Load service rules */}}
 	{{- $SR := tmpl.Exec "ParseDict" (dict "dict" $service "key" "Rules") | data.JSON -}}
 
+	{{- $ruleNames := keys $SR -}}
+	{{- range $index, $rule := $MR -}}
+		{{- if not (has $ruleNames $rule) -}}
+			{{- $ruleNames = $ruleNames | append $rule -}}
+		{{- end -}}
+	{{- end -}}
+
     {{/* Render service rules */}}
-    {{- range $index, $rule := $MR -}}
+    {{- range $index, $rule := $ruleNames -}}
 
         {{/* Generate command */}}
 		{{- $commandName := printf "%s_%s" $name $rule -}}
