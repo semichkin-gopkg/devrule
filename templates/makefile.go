@@ -80,16 +80,16 @@ endif
     {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
 
-{{- $Tags := coll.Slice "_" -}}
+{{- $Groups := coll.Slice "_" -}}
 
 {{/* Render service rules from configuration.Services.[Name].Rules or configuration.DefaultServiceRules */}}
 {{- "\n# ServiceRules\n" -}}
 {{- range $index, $service := $S -}}
 
-	{{- $serviceTags := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Tags") | data.JSONArray -}}
-	{{- range $index, $tag := $serviceTags -}}
-		{{- if not (has $Tags $tag) -}}
-			{{- $Tags = $Tags | append $tag -}}
+	{{- $serviceGroups := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Groups") | data.JSONArray -}}
+	{{- range $index, $group := $serviceGroups -}}
+		{{- if not (has $Groups $group) -}}
+			{{- $Groups = $Groups | append $group -}}
 		{{- end -}}
 	{{- end -}}
 
@@ -133,20 +133,22 @@ endif
 
 {{/* Render grouped rules */}}
 {{- "\n# GroupedRules\n\n" -}}
-{{- range $index, $tag := $Tags -}}
-	{{- if eq $tag "_" -}}
+{{- range $index, $group := $Groups -}}
+	{{- if eq $group "_" -}}
 		{{- "# Main Rules\n" -}}
+	{{- else if eq $group "_all" -}}
+		{{- continue -}}
 	{{- else -}}
-		{{- printf "# %s Rules\n" $tag -}}
+		{{- printf "# %s Rules\n" $group -}}
 	{{- end -}}
 
 	{{- range $index, $rule := $MR -}}
 		{{- $dependencies := "" -}}
 	
 		{{- range $index, $service := $S -}}
-			{{- $serviceTags := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Tags") | data.JSONArray -}}
+			{{- $serviceGroups := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Groups") | data.JSONArray -}}
 
-			{{- if or (eq $tag "_") (has $serviceTags $tag) -}}
+			{{- if or (or (eq $group "_") (has $serviceGroups $group)) (has $serviceGroups "_all") -}}
 				{{- $dependencies = printf "%s %s_%s" $dependencies (index $service "Name") $rule -}}
 			{{- end -}}
 		{{- end -}}
@@ -154,8 +156,8 @@ endif
 		{{- $dependencies = strings.TrimPrefix " " $dependencies}}
 
 		{{- $groupRule := $rule -}}
-		{{- if ne $tag "_" -}}
-			{{- $groupRule = printf "%s_%s" $tag $rule -}}
+		{{- if ne $group "_" -}}
+			{{- $groupRule = printf "%s_%s" $group $rule -}}
 		{{- end -}}
 
 		{{- template "RenderRuleWithoutNewLine" dict "rule" $groupRule "dependencies" $dependencies "command" "" -}}

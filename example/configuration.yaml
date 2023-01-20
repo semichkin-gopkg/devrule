@@ -31,13 +31,17 @@ DefaultServiceRules:
     (make Actualize || true)
 
 Services:
-  - Name: Configurator
-    Tags: ["Namespace1", "Namespace2"]
+  - Name: Env
+    Groups: ["_all"] # group _all tells that service rules should be included to all other groups
     # service variables
+    V:
+      Path: "env"
+  - Name: Configurator
+    Groups: ["Namespace1", "Namespace2"]
     V:
       Path: "configurator"
   - Name: Promise
-    Tags: ["Namespace1"]
+    Groups: ["Namespace1"]
     V:
       Path: "promise"
     Rules:

@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.16`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.17`
 
 ### Usage
 ## Build
@@ -45,13 +45,17 @@ DefaultServiceRules:
     (make Actualize || true)
 
 Services:
-  - Name: Configurator
-    Tags: ["Namespace1", "Namespace2"]
+  - Name: Env
+    Groups: ["_all"] # group _all tells that service rules should be included to all other groups
     # service variables
+    V:
+      Path: "env"
+  - Name: Configurator
+    Groups: ["Namespace1", "Namespace2"]
     V:
       Path: "configurator"
   - Name: Promise
-    Tags: ["Namespace1"]
+    Groups: ["Namespace1"]
     V:
       Path: "promise"
     Rules:
@@ -96,6 +100,12 @@ Stop:
 
 
 # ServiceRules
+Env_Load: 
+	make _clone \ repo="https://github.com/semichkin-gopkg/env.git" \ to="services/env" && cd services/env && (make Load || true)
+
+Env_Actualize: 
+	make Env_Load && cd services/env && git pull origin $(git branch --show-current) && (make Actualize || true)
+
 Configurator_Load: 
 	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && (make Load || true)
 
@@ -112,14 +122,14 @@ Promise_Actualize:
 # GroupedRules
 
 # Main Rules
-Load: Configurator_Load Promise_Load
-Actualize: Configurator_Actualize Promise_Actualize
+Load: Env_Load Configurator_Load Promise_Load
+Actualize: Env_Actualize Configurator_Actualize Promise_Actualize
 
 # Namespace1 Rules
-Namespace1_Load: Configurator_Load Promise_Load
-Namespace1_Actualize: Configurator_Actualize Promise_Actualize
+Namespace1_Load: Env_Load Configurator_Load Promise_Load
+Namespace1_Actualize: Env_Actualize Configurator_Actualize Promise_Actualize
 
 # Namespace2 Rules
-Namespace2_Load: Configurator_Load
-Namespace2_Actualize: Configurator_Actualize
+Namespace2_Load: Env_Load Configurator_Load
+Namespace2_Actualize: Env_Actualize Configurator_Actualize
 ```
