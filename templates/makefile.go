@@ -35,7 +35,7 @@ const Makefile = `
 {{- $c := ds "configuration" -}}
 
 {{/* Init internal global rules */}}
-{{- $IGR := dict "_clone" "[ -d '${to}' ] || git clone ${repo} ${to}" -}}
+{{- $IGR := dict "_clone" "@[ -d '${to}' ] || git clone ${repo} ${to}" -}}
 
 
 {{/* Parse variables */}}

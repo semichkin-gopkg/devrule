@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.18`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.19`
 
 ### Usage
 ## Build
