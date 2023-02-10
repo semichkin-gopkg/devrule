@@ -34,44 +34,48 @@ const Makefile = `
 {{/* Load configuration file (-d configuration.yaml) */}}
 {{- $c := ds "configuration" -}}
 
-{{/* Init internal global rules */}}
-{{- $IGR := dict "_clone" "@[ -d '${to}' ] || git clone ${repo} ${to}" -}}
+{{/* Init internal rules */}}
+{{- $IR := dict "_clone" "@[ -d '${to}' ] || git clone ${repo} ${to}" -}}
 
 
 {{/* Parse variables */}}
+{{- $EX := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Expressions") | data.JSONArray -}}
+{{- $EX = $EX | prepend "export PWD := $(shell pwd)" -}}
+
 {{- $EF := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "EnvFiles") | data.JSONArray -}}
+{{- $EF = $EF | prepend ".env" -}}
+
 {{- $GV := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GV") | data.JSON -}}
 {{- $GR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "GlobalRules") | data.JSON -}}
 {{- $MR := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "MainRules") | data.JSONArray -}}
 {{- $DSR := tmpl.Exec "ParseDict" (dict "dict" $c "key" "DefaultServiceRules") | data.JSON -}}
 {{- $S := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Services") | data.JSONArray -}}
 
+{{- /* Render expressions */ -}}
+{{- "# Expressions\n" -}}
+{{- range $i, $expression := $EX }}
+{{- printf "%s\n" $expression -}}
+{{- end -}}
+{{- "\n\n" -}}
 
 {{- /* Render env files import */ -}}
-ifneq (,$(wildcard .env))
-	include .env
-	export
-endif
-ifneq (,$(wildcard .local.env))
-	include .local.env
-	export
-endif
-{{- range $i, $path := $EF }}
+{{- "# EnvFiles\n" -}}
+{{- range $i, $path := $EF -}}
 ifneq (,$(wildcard {{ $path }}))
 	include {{ $path }}
 	export
 endif
-{{- end }}
+{{ end }}
 
-{{/* Render global rules */}}
-{{- "\n# GlobalRules\n" -}}
-
-{{/* Render internal global rules */}}
-{{- range $rule, $command := $IGR -}}
+{{/* Render internal rules */}}
+{{- "# InternalRules\n" -}}
+{{- range $rule, $command := $IR -}}
     {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
+{{- "\n" -}}
 
-{{/* Render external global rules */}}
+{{/* Render global rules */}}
+{{- "# GlobalRules\n" -}}
 {{- range $rule, $command := $GR -}}
 	{{/* Replace global variables inside command */}}
 	{{- range $name, $value := $GV -}}
@@ -79,11 +83,12 @@ endif
 	{{- end -}}
     {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
 {{- end -}}
+{{- "\n" -}}
 
 {{- $Groups := coll.Slice "_" -}}
 
 {{/* Render service rules from configuration.Services.[Name].Rules or configuration.DefaultServiceRules */}}
-{{- "\n# ServiceRules\n" -}}
+{{- "# ServiceRules\n" -}}
 {{- range $index, $service := $S -}}
 
 	{{- $serviceGroups := tmpl.Exec "ParseSlice" (dict "dict" $service "key" "Groups") | data.JSONArray -}}
@@ -137,9 +142,10 @@ endif
     {{- end -}}
 
 {{- end -}}
+{{- "\n" -}}
 
 {{/* Render grouped rules */}}
-{{- "\n# GroupedRules\n\n" -}}
+{{- "# GroupedRules\n\n" -}}
 {{- range $index, $group := $Groups -}}
 	{{- if eq $group "_" -}}
 		{{- "# Main Rules\n" -}}

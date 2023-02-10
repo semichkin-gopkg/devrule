@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.20`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.21`
 
 ### Usage
 ## Build
@@ -17,6 +17,9 @@ GV:
   RepoBase: "https://github.com/semichkin-gopkg"
   LoadingFolder: "services"
 
+Expressions:
+  - export FROM_EXPRESSIONS := $(shell echo "from_expressions")
+
 EnvFiles:
   - import.env
 
@@ -24,8 +27,8 @@ GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
-
-  Env: "echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}"
+  EnvFilesTest: "@echo ${FROM_IMPORT_ENV}"
+  ExpressionsTest: "@echo ${FROM_EXPRESSIONS}"
 
 MainRules:
   - "Load"
@@ -69,12 +72,14 @@ Services:
 
 #### Result
 ```makefile
+# Expressions
+export PWD := $(shell pwd)
+export FROM_EXPRESSIONS := $(shell echo "from_expressions")
+
+
+# EnvFiles
 ifneq (,$(wildcard .env))
 	include .env
-	export
-endif
-ifneq (,$(wildcard .local.env))
-	include .local.env
 	export
 endif
 ifneq (,$(wildcard import.env))
@@ -83,12 +88,17 @@ ifneq (,$(wildcard import.env))
 endif
 
 
-# GlobalRules
+# InternalRules
 _clone: 
-	[ -d '${to}' ] || git clone ${repo} ${to}
+	@[ -d '${to}' ] || git clone ${repo} ${to}
 
-Env: 
-	echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}
+
+# GlobalRules
+EnvFilesTest: 
+	@echo ${FROM_IMPORT_ENV}
+
+ExpressionsTest: 
+	@echo ${FROM_EXPRESSIONS}
 
 Restart: 
 	make Stop && make Start
