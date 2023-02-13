@@ -1,7 +1,7 @@
 # global variables
 GV:
-  RepoBase: "https://github.com/semichkin-gopkg"
-  LoadingFolder: "services"
+  Repo: "https://github.com/semichkin-gopkg"
+  ServiceDir: "services"
 
 Expressions:
   - export FROM_EXPRESSIONS := $(shell echo "from_expressions")
@@ -17,21 +17,13 @@ GlobalRules:
   ExpressionsTest: "@echo ${FROM_EXPRESSIONS}"
 
 MainRules:
-  - "Load"
-  - "Actualize"
+  - "Pull"
 
 DefaultServiceRules:
-  Load: >
-    make _clone \
-    repo="{{GV.RepoBase}}/{{V.Path}}.git" \
-    to="{{GV.LoadingFolder}}/{{V.Path}}" &&
-    cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    (make Load || true)
-  Actualize: >
-    make {{V.ServiceName}}_Load &&
-    cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    git pull origin $(git branch --show-current) &&
-    (make Actualize || true)
+  Pull: >
+    @make -f ${mk} _git_pull 
+    repo="{{GV.Repo}}/{{V.Path}}.git"
+    to="{{GV.ServiceDir}}/{{V.Path}}"
 
 Services:
   - Name: Env
@@ -48,6 +40,5 @@ Services:
     V:
       Path: "promise"
     Rules:
-      Load: "git clone {some_2}"
       Unique: "echo 'test'"
   # etc...

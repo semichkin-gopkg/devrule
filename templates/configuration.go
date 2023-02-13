@@ -1,10 +1,12 @@
 package templates
 
 const Configuration = `# global variables
-# global variables
 GV:
-  RepoBase: "https://github.com/semichkin-gopkg"
-  LoadingFolder: "services"
+  Repo: "https://github.com/semichkin-gopkg"
+  ServiceDir: "services"
+
+Expressions:
+  - export FROM_EXPRESSIONS := $(shell echo "from_expressions")
 
 EnvFiles:
   - import.env
@@ -13,37 +15,33 @@ GlobalRules:
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
-  
-  Env: "echo ${FROM_ENV} && echo ${FROM_LOCAL_ENV} && echo ${FROM_IMPORT_ENV}"
+  EnvFilesTest: "@echo ${FROM_IMPORT_ENV}"
+  ExpressionsTest: "@echo ${FROM_EXPRESSIONS}"
 
 MainRules:
-  - "Load"
-  - "Actualize"
+  - "Pull"
 
 DefaultServiceRules:
-  Load: >
-    make _clone \
-    repo="{{GV.RepoBase}}/{{V.Path}}.git" \
-    to="{{GV.LoadingFolder}}/{{V.Path}}" &&
-    cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    (make Load || true)
-  Actualize: >
-    make {{V.ServiceName}}_Load &&
-    cd {{GV.LoadingFolder}}/{{V.Path}} &&
-    git pull origin $(git branch --show-current) &&
-    (make Actualize || true)
+  Pull: >
+    @make -f ${mk} _git_pull 
+    repo="{{GV.Repo}}/{{V.Path}}.git"
+    to="{{GV.ServiceDir}}/{{V.Path}}"
 
 Services:
-  - Name: Configurator
-    Tags: ["Namespace1", "Namespace2"]
+  - Name: Env
+    Groups: ["_all"] # group _all tells that service rules should be included to all other groups
     # service variables
+    V:
+      Path: "env"
+  - Name: Configurator
+    Groups: ["Namespace1", "Namespace2"]
     V:
       Path: "configurator"
   - Name: Promise
-    Tags: ["Namespace1"]
+    Groups: ["Namespace1"]
     V:
       Path: "promise"
     Rules:
-      Load: "git clone {some_2}"
+      Unique: "echo 'test'"
   # etc...
 `

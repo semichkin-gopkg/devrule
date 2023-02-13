@@ -1,5 +1,7 @@
 # Expressions
-export PWD := $(shell pwd)
+mk := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkdir := $(dir $(mk))
+pwd := $(shell pwd)
 export FROM_EXPRESSIONS := $(shell echo "from_expressions")
 
 
@@ -15,8 +17,8 @@ endif
 
 
 # InternalRules
-_clone: 
-	@[ -d '${to}' ] || git clone ${repo} ${to}
+_git_pull: 
+	@[ -d '${to}' ] || git clone ${repo} ${to} && git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current)
 
 
 # GlobalRules
@@ -37,39 +39,27 @@ Stop:
 
 
 # ServiceRules
-Env_Load: 
-	make _clone \ repo="https://github.com/semichkin-gopkg/env.git" \ to="services/env" && cd services/env && (make Load || true)
+Env_Pull: 
+	@make -f ${mk} _git_pull  repo="https://github.com/semichkin-gopkg/env.git" to="services/env"
 
-Env_Actualize: 
-	make Env_Load && cd services/env && git pull origin $(git branch --show-current) && (make Actualize || true)
-
-Configurator_Load: 
-	make _clone \ repo="https://github.com/semichkin-gopkg/configurator.git" \ to="services/configurator" && cd services/configurator && (make Load || true)
-
-Configurator_Actualize: 
-	make Configurator_Load && cd services/configurator && git pull origin $(git branch --show-current) && (make Actualize || true)
-
-Promise_Load: 
-	git clone {some_2}
+Configurator_Pull: 
+	@make -f ${mk} _git_pull  repo="https://github.com/semichkin-gopkg/configurator.git" to="services/configurator"
 
 Promise_Unique: 
 	echo 'test'
 
-Promise_Actualize: 
-	make Promise_Load && cd services/promise && git pull origin $(git branch --show-current) && (make Actualize || true)
+Promise_Pull: 
+	@make -f ${mk} _git_pull  repo="https://github.com/semichkin-gopkg/promise.git" to="services/promise"
 
 
 # GroupedRules
 
 # Main Rules
-Load: Env_Load Configurator_Load Promise_Load
-Actualize: Env_Actualize Configurator_Actualize Promise_Actualize
+Pull: Env_Pull Configurator_Pull Promise_Pull
 
 # Namespace1 Rules
-Namespace1_Load: Env_Load Configurator_Load Promise_Load
-Namespace1_Actualize: Env_Actualize Configurator_Actualize Promise_Actualize
+Namespace1_Pull: Env_Pull Configurator_Pull Promise_Pull
 
 # Namespace2 Rules
-Namespace2_Load: Env_Load Configurator_Load
-Namespace2_Actualize: Env_Actualize Configurator_Actualize
+Namespace2_Pull: Env_Pull Configurator_Pull
 

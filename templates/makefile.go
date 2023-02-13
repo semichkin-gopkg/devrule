@@ -35,12 +35,17 @@ const Makefile = `
 {{- $c := ds "configuration" -}}
 
 {{/* Init internal rules */}}
-{{- $IR := dict "_clone" "@[ -d '${to}' ] || git clone ${repo} ${to}" -}}
+{{- $git_clone := "[ -d '${to}' ] || git clone ${repo} ${to}" -}}
+{{- $git_pull := "git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current)" -}}
 
+{{- $IR := dict -}}
+{{- $IR = merge $IR (dict "_git_pull" (printf "@%s && %s" $git_clone $git_pull)) -}}
 
 {{/* Parse variables */}}
 {{- $EX := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Expressions") | data.JSONArray -}}
-{{- $EX = $EX | prepend "export PWD := $(shell pwd)" -}}
+{{- $EX = $EX | prepend "pwd := $(shell pwd)" -}}
+{{- $EX = $EX | prepend "mkdir := $(dir $(mk))" -}}
+{{- $EX = $EX | prepend "mk := $(abspath $(lastword $(MAKEFILE_LIST)))" -}}
 
 {{- $EF := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "EnvFiles") | data.JSONArray -}}
 {{- $EF = $EF | prepend ".env" -}}
