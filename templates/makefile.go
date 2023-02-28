@@ -36,7 +36,7 @@ const Makefile = `
 
 {{/* Init internal rules */}}
 {{- $git_clone := "[ -d '${to}' ] || git clone ${repo} ${to}" -}}
-{{- $git_pull := "git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current &> /dev/null)" -}}
+{{- $git_pull := "git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell cd ${to} 2> /dev/null && git branch --show-current)" -}}
 
 {{- $IR := dict -}}
 {{- $IR = merge $IR (dict "_git_pull" (printf "@%s && %s" $git_clone $git_pull)) -}}
