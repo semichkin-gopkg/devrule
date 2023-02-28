@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.22`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.23`
 
 ### Usage
 ## Build
@@ -83,7 +83,7 @@ endif
 
 # InternalRules
 _git_pull: 
-	@[ -d '${to}' ] || git clone ${repo} ${to} && git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current)
+	@[ -d '${to}' ] || git clone ${repo} ${to} && git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current &> /dev/null)
 
 
 # GlobalRules

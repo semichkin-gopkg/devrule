@@ -18,7 +18,7 @@ endif
 
 # InternalRules
 _git_pull: 
-	@[ -d '${to}' ] || git clone ${repo} ${to} && git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current)
+	@[ -d '${to}' ] || git clone ${repo} ${to} && git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current &> /dev/null)
 
 
 # GlobalRules
