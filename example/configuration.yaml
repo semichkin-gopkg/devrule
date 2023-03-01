@@ -10,6 +10,7 @@ EnvFiles:
   - import.env
 
 GlobalRules:
+  Echo: "@echo ${message}"
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
@@ -17,13 +18,12 @@ GlobalRules:
   ExpressionsTest: "@echo ${FROM_EXPRESSIONS}"
 
 MainRules:
-  - "Pull"
+  - "Info"
 
 DefaultServiceRules:
-  Pull: >
-    @make -f ${mk} _git_pull 
-    repo="{{GV.Repo}}/{{V.Path}}.git"
-    to="{{GV.ServiceDir}}/{{V.Path}}"
+  Info: >
+    @make -f ${mk} Echo
+    message="Name: {{V.ServiceName}}"
 
 Services:
   - Name: Env

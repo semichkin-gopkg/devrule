@@ -34,13 +34,6 @@ const Makefile = `
 {{/* Load configuration file (-d configuration.yaml) */}}
 {{- $c := ds "configuration" -}}
 
-{{/* Init internal rules */}}
-{{- $git_clone := "[ -d '${to}' ] || git clone ${repo} ${to}" -}}
-{{- $git_pull := "git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell cd ${to} 2> /dev/null && git branch --show-current)" -}}
-
-{{- $IR := dict -}}
-{{- $IR = merge $IR (dict "_git_pull" (printf "@%s && %s" $git_clone $git_pull)) -}}
-
 {{/* Parse variables */}}
 {{- $EX := tmpl.Exec "ParseSlice" (dict "dict" $c "key" "Expressions") | data.JSONArray -}}
 {{- $EX = $EX | prepend "pwd := $(shell pwd)" -}}
@@ -71,13 +64,6 @@ ifneq (,$(wildcard {{ $path }}))
 	export
 endif
 {{ end }}
-
-{{/* Render internal rules */}}
-{{- "# InternalRules\n" -}}
-{{- range $rule, $command := $IR -}}
-    {{- template "RenderRule" dict "rule" $rule "dependencies" "" "command" $command }}
-{{- end -}}
-{{- "\n" -}}
 
 {{/* Render global rules */}}
 {{- "# GlobalRules\n" -}}
