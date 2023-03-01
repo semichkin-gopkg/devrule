@@ -2,7 +2,7 @@
 A tool for generating rules for managing a large number of local microservices
 
 ### Installing
-`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.22`
+`go install github.com/semichkin-gopkg/devrule/cmd/devrule@v0.0.23`
 
 ### Usage
 ## Build
@@ -24,6 +24,7 @@ EnvFiles:
   - import.env
 
 GlobalRules:
+  Echo: "@echo ${message}"
   Start: "cd docker && docker-compose up -d --build"
   Stop: "cd docker && docker-compose down"
   Restart: "make Stop && make Start"
@@ -31,13 +32,12 @@ GlobalRules:
   ExpressionsTest: "@echo ${FROM_EXPRESSIONS}"
 
 MainRules:
-  - "Pull"
+  - "Info"
 
 DefaultServiceRules:
-  Pull: >
-    @make -f ${mk} _git_pull 
-    repo="{{GV.Repo}}/{{V.Path}}.git"
-    to="{{GV.ServiceDir}}/{{V.Path}}"
+  Info: >
+    @make -f ${mk} Echo
+    message="Name: {{V.ServiceName}}"
 
 Services:
   - Name: Env
@@ -81,12 +81,10 @@ ifneq (,$(wildcard import.env))
 endif
 
 
-# InternalRules
-_git_pull: 
-	@[ -d '${to}' ] || git clone ${repo} ${to} && git --git-dir=${to}/.git --work-tree=${to} pull origin $(shell git --git-dir=${to}/.git --work-tree=${to} branch --show-current)
-
-
 # GlobalRules
+Echo: 
+	@echo ${message}
+
 EnvFilesTest: 
 	@echo ${FROM_IMPORT_ENV}
 
@@ -104,27 +102,27 @@ Stop:
 
 
 # ServiceRules
-Env_Pull: 
-	@make -f ${mk} _git_pull  repo="https://github.com/semichkin-gopkg/env.git" to="services/env"
+Env_Info: 
+	@make -f ${mk} Echo message="Name: Env"
 
-Configurator_Pull: 
-	@make -f ${mk} _git_pull  repo="https://github.com/semichkin-gopkg/configurator.git" to="services/configurator"
+Configurator_Info: 
+	@make -f ${mk} Echo message="Name: Configurator"
 
 Promise_Unique: 
 	echo 'test'
 
-Promise_Pull: 
-	@make -f ${mk} _git_pull  repo="https://github.com/semichkin-gopkg/promise.git" to="services/promise"
+Promise_Info: 
+	@make -f ${mk} Echo message="Name: Promise"
 
 
 # GroupedRules
 
 # Main Rules
-Pull: Env_Pull Configurator_Pull Promise_Pull
+Info: Env_Info Configurator_Info Promise_Info
 
 # Namespace1 Rules
-Namespace1_Pull: Env_Pull Configurator_Pull Promise_Pull
+Namespace1_Info: Env_Info Configurator_Info Promise_Info
 
 # Namespace2 Rules
-Namespace2_Pull: Env_Pull Configurator_Pull
+Namespace2_Info: Env_Info Configurator_Info
 ```
